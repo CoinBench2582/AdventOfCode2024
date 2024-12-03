@@ -20,34 +20,37 @@ internal class Program
             return;
         }
 #endif
-        var result = TryGetResult(path);
-        if (result.Item2 is not null)
+        (int result, Exception? ex) = TryGetResult(path);
+        if (ex is not null)
         {
-            WriteLine($"Stala se chyba: {result.Item2.Message}");
+            WriteLine($"Stala se chyba: {ex.Message}");
             return;
         }
-        WriteLine($"Výsledek: {result.Item1}");
+        WriteLine($"Výsledná vzdálenost: {result}");
         ReadLine();
     }
 }
 
 public static class Methods
 {
-    public static (int?, Exception?) TryGetResult(string pathOfSource)
+    public static (int, Exception?) TryGetResult(string pathOfSource)
     {
         try
         {
             var (left, right) = ParseData(pathOfSource);
-            int result = left.Order().Zip(right.Order())
-                .Select(t => int.Abs(t.First - t.Second))
-                .Sum();
+            int result = left.AggregateEasy(right);
             return (result, null);
         }
         catch (Exception ex)
         {
-            return (null, ex);
+            return (default, ex);
         }
     }
+
+    public static int AggregateEasy(this IEnumerable<int> left, IEnumerable<int> right)
+        => left.Order().Zip(right.Order())
+                .Select(t => int.Abs(t.First - t.Second))
+                .Sum();
 
     private static (int[] left, int[] right) ParseData(string aboslutePath)
     {
@@ -62,12 +65,12 @@ public static class Methods
             var reduced =
                 lines.Select(s => s.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
                     .Select(x => x.Length == 2
-                        ? new { left = int.Parse(x[0]), right = int.Parse(x[1]) }
+                        ? new Pair(int.Parse(x[0]), int.Parse(x[1]))
                         : throw new ArgumentException($"Neočekávaná délka řádku: {x.Length}"));
             int i = 0;
-            foreach (var item in reduced)
+            foreach (Pair item in reduced)
             {
-                (left[i], right[i]) = (item.left, item.right);
+                (left[i], right[i]) = (item.Left, item.Right);
                 i++;
             }
         } 
@@ -81,4 +84,6 @@ public static class Methods
 
         return (left, right);
     }
+
+    internal record struct Pair(int Left, int Right);
 }
