@@ -40,7 +40,7 @@ public static class Methods
             var (left, right) = ParseData(pathOfSource);
             int result = left.Order().Zip(right.Order())
                 .Select(t => int.Abs(t.First - t.Second))
-                .Aggregate((a, b) => a + b);
+                .Sum();
             return (result, null);
         }
         catch (Exception ex)
@@ -66,7 +66,10 @@ public static class Methods
                         : throw new ArgumentException($"Neočekávaná délka řádku: {x.Length}"));
             int i = 0;
             foreach (var item in reduced)
+            {
                 (left[i], right[i]) = (item.left, item.right);
+                i++;
+            }
         } 
         catch (Exception ex)
         {
