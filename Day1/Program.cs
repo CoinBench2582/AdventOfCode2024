@@ -37,8 +37,8 @@ public static class Methods
     {
         try
         {
-            var (left, right) = ParseData(pathOfSource).SplitData();
-            distance = left.GetDistance(right);
+            var output = ParseData(pathOfSource).OrderData();
+            distance = output.DistanceSum();
             return null;
         }
         catch (Exception ex)
@@ -48,15 +48,29 @@ public static class Methods
         }
     }
 
-    public static int GetDistance(this IEnumerable<int> left, IEnumerable<int> right)
-        => left.Order().Zip(right.Order())
-                .Select(t => int.Abs(t.First - t.Second))
-                .Sum();
+    private static IEnumerable<Pair> ParseData(string aboslutePath)
+        => File.ReadAllLines(aboslutePath)
+            .Select(s => s.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            .Select(x => x.Length == 2
+                ? new Pair(int.Parse(x[0]), int.Parse(x[1]))
+                : throw new ArgumentException($"Neočekávaná délka řádku: {x.Length}"));
+
+    public static int GetDistance(this (IEnumerable<int> left, IEnumerable<int> right) input)
+        => (input.left, input.right).OrderData().ZipData().DistanceSum();
 
     public static int GetDistance(this IEnumerable<Pair> data)
+        => data.OrderData().Select(t => int.Abs(t.Left - t.Right)).Sum();
+
+    private static int DistanceSum(this IEnumerable<Pair> data)
         => data.Select(t => int.Abs(t.Left - t.Right)).Sum();
 
-    internal static (IEnumerable<int> left, IEnumerable<int> right) SplitData(this IEnumerable<Pair> data)
+    internal static IEnumerable<Pair> OrderData(this IEnumerable<Pair> data)
+        => data.SplitData().OrderData().ZipData();
+
+    private static (IEnumerable<int> left, IEnumerable<int> right) OrderData(this (IEnumerable<int> left, IEnumerable<int> right) input)
+        => (input.left.Order(), input.right.Order());
+
+    private static (IEnumerable<int> left, IEnumerable<int> right) SplitData(this IEnumerable<Pair> data)
     {
         int count = data.Count();
         (List<int> left, List<int> right) = (new(++count), new(count));
@@ -65,12 +79,9 @@ public static class Methods
         return (left, right);
     }
 
-    private static IEnumerable<Pair> ParseData(string aboslutePath)
-        => File.ReadAllLines(aboslutePath)
-            .Select(s => s.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-            .Select(x => x.Length == 2
-                ? new Pair(int.Parse(x[0]), int.Parse(x[1]))
-                : throw new ArgumentException($"Neočekávaná délka řádku: {x.Length}"));
+    private static IEnumerable<Pair> ZipData(this (IEnumerable<int> left, IEnumerable<int> right) input)
+        => input.left.Zip(input.right)
+            .Select(p => new Pair(p.First, p.Second));
 }
 
 public record struct Pair(int Left, int Right);
