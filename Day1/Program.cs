@@ -38,6 +38,10 @@ public static class Methods
         try
         {
             var (left, right) = ParseData(pathOfSource);
+            int result = left.Order().Zip(right.Order())
+                .Select(t => int.Abs(t.First - t.Second))
+                .Aggregate((a, b) => a + b);
+            return (result, null);
         }
         catch (Exception ex)
         {
