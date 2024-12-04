@@ -24,30 +24,32 @@ internal class Program
             return;
         }
 #endif
-        Exception? ex = TryGetResult(path, out int safe);
+        Exception? ex = TryGetResult(path, out int safe, out int pity);
         if (ex is not null)
         {
             WriteLine($"Stala se chyba: {ex.Message}");
             return;
         }
         WriteLine($"Bezpečných výkazů: {safe}");
+        WriteLine($"Včetně omilostněných: {pity}");
         _ = ReadLine();
     }
 }
 
 public static class Methods
 {
-    public static Exception? TryGetResult(string pathOfSource, out int countOfSafe)
+    public static Exception? TryGetResult(string pathOfSource, out int countOfSafe, out int withPity)
     {
         try
         {
             var output = ParseData(pathOfSource);
             countOfSafe = output.Count(IsValidReport);
+            withPity = output.Count(IsValidPity);
             return null;
         }
         catch (Exception ex)
         {
-            countOfSafe = default;
+            withPity = countOfSafe = default;
             return ex;
         }
     }
@@ -57,7 +59,54 @@ public static class Methods
             .Select(s => s.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
             .Select(x => x.Select(n => int.Parse(n)));
 
-    #region Part1
+    #region Part 2
+    internal static bool IsValidPity(this IEnumerable<int> report)
+    {
+        int lastNum = report.First();
+        int countOfBad = 0;
+        bool firstNotFound = true;
+        ChangeStatus lastFine, curr;
+        lastFine = ChangeStatus.None;
+
+        foreach (int num in report.Skip(1))
+        {
+            curr = (num - lastNum) switch
+            {
+                0 => ChangeStatus.None,
+                > 3 => ChangeStatus.OutOfRange,
+                < -3 => ChangeStatus.OutOfRange,
+                > 0 => ChangeStatus.Increasing,
+                < 0 => ChangeStatus.Decreasing,
+            };
+
+            (lastFine, lastNum) = Assert(lastFine, curr, num);
+            if (countOfBad > 1)
+                return false;
+        }
+        return true;
+
+        (ChangeStatus, int) Assert(ChangeStatus lastFine, ChangeStatus current, int currNum)
+        {
+            if (curr is ChangeStatus.None or ChangeStatus.OutOfRange)
+            {
+                countOfBad++;
+                return (lastFine, firstNotFound ? currNum : lastNum);
+            }
+
+            if (firstNotFound)
+                firstNotFound = false;
+            else if (current != lastFine)
+            {
+                countOfBad++;
+                return (lastFine, lastNum);
+            }
+
+            return (current, currNum);
+        }
+    }
+    #endregion
+
+    #region Part 1
     internal static bool IsValidReport(this IEnumerable<int> report)
     {
         int last = report.First();
@@ -91,5 +140,6 @@ internal enum ChangeStatus
 {
     None,
     Increasing,
-    Decreasing
+    Decreasing,
+    OutOfRange
 }
