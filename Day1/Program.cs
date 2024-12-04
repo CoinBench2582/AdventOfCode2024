@@ -39,6 +39,7 @@ public static class Methods
         {
             var output = ParseData(pathOfSource).OrderData();
             distance = output.DistanceSum();
+            int similarityScore = output.SplitData().PairForScoring().SimilarityScoresSum();
             return null;
         }
         catch (Exception ex)
@@ -67,15 +68,30 @@ public static class Methods
     #endregion
 
     #region Part 2
+    public static int GetSimilarityScores(this (IEnumerable<int> toCount, IEnumerable<int> pool) input)
+        => input.OrderData()
+            .PairForScoring()
+            .SimilarityScoresSum();
 
+    public static int GetSimilarityScores(this IEnumerable<Pair> data)
+        => data.OrderData().SplitData()
+            .PairForScoring()
+            .SimilarityScoresSum();
 
+    private static IEnumerable<Pair> PairForScoring(this (IEnumerable<int> toCount, IEnumerable<int> pool) input)
+        => (input.toCount,
+            input.pool.CountEach(input.toCount))
+            .ZipData();
+
+    private static int SimilarityScoresSum(this IEnumerable<Pair> data)
+        => data.Select(p => p.Left * p.Right).Sum();
 
     private static IEnumerable<int> CountEach(this IEnumerable<int> pool, IEnumerable<int> toCount)
         => toCount.Distinct()
             .Select(target
-            => pool.SkipWhile(n => n < target)
-                .TakeWhile(n => n == target)
-                .Count());
+                => pool.SkipWhile(n => n < target)
+                    .TakeWhile(n => n == target)
+                    .Count());
     #endregion
 
     #region Utils
@@ -86,13 +102,8 @@ public static class Methods
         => (input.left.Order(), input.right.Order());
 
     private static (IEnumerable<int> left, IEnumerable<int> right) SplitData(this IEnumerable<Pair> data)
-    {
-        int count = data.Count();
-        (List<int> left, List<int> right) = (new(++count), new(count));
-        left.AddRange(data.Select(p => p.Left));
-        right.AddRange(data.Select(p => p.Right));
-        return (left, right);
-    }
+        => (data.Select(p => p.Left),
+            data.Select(x => x.Right));
 
     private static IEnumerable<Pair> ZipData(this (IEnumerable<int> left, IEnumerable<int> right) input)
         => input.left.Zip(input.right)
