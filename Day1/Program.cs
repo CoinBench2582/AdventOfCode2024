@@ -55,15 +55,38 @@ public static class Methods
                 ? new Pair(int.Parse(x[0]), int.Parse(x[1]))
                 : throw new ArgumentException($"Neočekávaná délka řádku: {x.Length}"));
 
+    #region Part 1
     public static int GetDistance(this (IEnumerable<int> left, IEnumerable<int> right) input)
         => (input.left, input.right).OrderData().ZipData().DistanceSum();
 
     public static int GetDistance(this IEnumerable<Pair> data)
-        => data.OrderData().Select(t => int.Abs(t.Left - t.Right)).Sum();
+        => data.OrderData().DistanceSum();
 
     private static int DistanceSum(this IEnumerable<Pair> data)
         => data.Select(t => int.Abs(t.Left - t.Right)).Sum();
+    #endregion
 
+    #region Part 2
+
+
+
+    private static IEnumerable<int> CountEach(this IEnumerable<int> pool, IEnumerable<int> toCount)
+    {
+        IEnumerable<int> sorted = toCount.Distinct();
+        int[] result = new int[sorted.Count()];
+        int last = 0;
+        int index = -1;
+        IEnumerable<int> temp;
+        foreach (int target in sorted)
+        {
+            temp = pool.SkipWhile(n => n < target).TakeWhile(n => n == target);
+            result[index] = temp.Count();
+        }
+        return result;
+    }
+    #endregion
+
+    #region Utils
     internal static IEnumerable<Pair> OrderData(this IEnumerable<Pair> data)
         => data.SplitData().OrderData().ZipData();
 
@@ -82,6 +105,7 @@ public static class Methods
     private static IEnumerable<Pair> ZipData(this (IEnumerable<int> left, IEnumerable<int> right) input)
         => input.left.Zip(input.right)
             .Select(p => new Pair(p.First, p.Second));
+    #endregion
 }
 
 public record struct Pair(int Left, int Right);
