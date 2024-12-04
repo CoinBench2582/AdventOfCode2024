@@ -20,31 +20,32 @@ internal class Program
             return;
         }
 #endif
-        Exception? ex = TryGetResult(path, out int distance);
+        Exception? ex = TryGetResult(path, out int distance, out int similarity);
         if (ex is not null)
         {
             WriteLine($"Stala se chyba: {ex.Message}");
             return;
         }
         WriteLine($"Výsledná vzdálenost: {distance}");
-        ReadLine();
+        WriteLine($"Výsledné skóre podobnosti: {similarity}");
+        _ = ReadLine();
     }
 }
 
 public static class Methods
 {
-    public static Exception? TryGetResult(string pathOfSource, out int distance)
+    public static Exception? TryGetResult(string pathOfSource, out int distance, out int similarityScore)
     {
         try
         {
             var output = ParseData(pathOfSource).OrderData();
             distance = output.DistanceSum();
-            int similarityScore = output.SplitData().PairForScoring().SimilarityScoresSum();
+            similarityScore = output.SplitData().PairForScoring().SimilarityScoresSum();
             return null;
         }
         catch (Exception ex)
         {
-            distance = default;
+            similarityScore = distance = default;
             return ex;
         }
     }
