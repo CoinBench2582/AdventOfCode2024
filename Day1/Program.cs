@@ -71,19 +71,11 @@ public static class Methods
 
 
     private static IEnumerable<int> CountEach(this IEnumerable<int> pool, IEnumerable<int> toCount)
-    {
-        IEnumerable<int> sorted = toCount.Distinct();
-        int[] result = new int[sorted.Count()];
-        int last = 0;
-        int index = -1;
-        IEnumerable<int> temp;
-        foreach (int target in sorted)
-        {
-            temp = pool.SkipWhile(n => n < target).TakeWhile(n => n == target);
-            result[index] = temp.Count();
-        }
-        return result;
-    }
+        => toCount.Distinct()
+            .Select(target
+            => pool.SkipWhile(n => n < target)
+                .TakeWhile(n => n == target)
+                .Count());
     #endregion
 
     #region Utils
