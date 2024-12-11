@@ -6,7 +6,8 @@ namespace Day2;
 internal class Program
 {
 #if DEBUG
-    const string localPath = @"TestData.txt";
+    const string testPath = @"TestData.txt";
+    const string localPath = @"Source.txt";
     static readonly string debugPath = Path.GetFullPath(localPath);
 #endif
 
@@ -42,7 +43,7 @@ public static class Methods
         try
         {
             var output = ParseData(pathOfSource);
-            countOfSafe = output.Count(IsValidReport);
+            countOfSafe = output.Count(x => IsValidReport(x) == -1);
             withPity = output.Count(IsValidPity);
             return null;
         }
@@ -104,27 +105,30 @@ public static class Methods
     #endregion
 
     #region Part 1
-    internal static bool IsValidReport(this IEnumerable<int> report)
+    /// <summary>
+    /// Finds out if the report is valid
+    /// </summary>
+    /// <returns>
+    /// Returns the index of the first invalid item.
+    /// If <c>-1</c> is returned, the report is valid.
+    /// </returns>
+    internal static int IsValidReport(this IEnumerable<int> report)
     {
         int last = report.First();
         ChangeStatus status, curr;
         status = ChangeStatus.None;
+        int index = 0;
         foreach (int num in report.Skip(1))
         {
-            curr = (num - last) switch
-            {
-                0 => ChangeStatus.None,
-                > 3 => ChangeStatus.None,
-                < -3 => ChangeStatus.None,
-                > 0 => ChangeStatus.Increasing,
-                < 0 => ChangeStatus.Decreasing,
-            };
-            status = curr != ChangeStatus.None && (status == ChangeStatus.None || status == curr) ? curr : ChangeStatus.None;
-            if (status == ChangeStatus.None)
-                return false;
+            curr = AssertDiff(last, num);
+            if (curr is ChangeStatus.None or ChangeStatus.OutOfRange || (status != ChangeStatus.None && curr != status))
+                return index;
+
+            status = curr;
+            index++;
             last = num;
         }
-        return true;
+        return -1;
     }
     #endregion
 
