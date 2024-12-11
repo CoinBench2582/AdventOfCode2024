@@ -61,7 +61,22 @@ namespace Day3
                 char[] buffer = new char[maxTokenLen];
                 try
                 {
-                    
+                    char last; int count;
+                    MulPair pair; Exception? ex;
+                    while (!stream!.EndOfStream)
+                    {
+                        for (last = (char)stream.Peek(); last != 'm' || stream.EndOfStream; last = (char)stream.Read());
+                        if (last != 'm') break;
+                        else buffer[0] = last;
+
+                        for (count = 1; last != ')' || count < maxTokenLen || !stream.EndOfStream; count++)
+                            buffer[count] = last = (char)stream.Read();
+
+                        ex = buffer.ParsePair(out pair);
+                        if (ex is null)
+                            yield return pair;
+                        Array.Clear(buffer, 0, maxTokenLen);
+                    }
                 }
                 finally
                 {
@@ -70,6 +85,13 @@ namespace Day3
                     buffer = null;
                 }
             }
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        internal static Exception? ParsePair(this char[] chars, out MulPair pair)
+        {
+            pair = default;
+            return new NotImplementedException();
         }
         #endregion
 
