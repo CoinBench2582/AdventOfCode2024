@@ -43,13 +43,44 @@ namespace Day3
             return new NotImplementedException();
         }
 
+        private static StreamReader GetInput(string path) => File.OpenText(path);
 
         #region Part 1
+        internal static IEnumerable<MulPair> ParseAgressive(this StreamReader stream)
+        {
+            if (stream is null || !stream.BaseStream.CanRead || stream.EndOfStream || stream.)
+                throw new ArgumentException();
 
+            // Token: mul(xxx,yyy)
+            const int maxTokenLen = 3 + 1 + 3 + 1 + 3 + 1;
+
+            return Impl();
+
+            IEnumerable<MulPair> Impl()
+            {
+                char[] buffer = new char[maxTokenLen];
+                try
+                {
+                    
+                }
+                finally
+                {
+                    stream?.Close();
+                    Array.Clear(buffer);
+                    buffer = null;
+                }
+            }
+        }
         #endregion
 
         #region Utils
+        internal static long SumPairs(this IEnumerable<MulPair> pairs)
+            => pairs.Select(pair => (long)pair.Mul()).Sum();
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        internal static int Mul(this MulPair pair) => pair.Left * pair.Right;
         #endregion
     }
+
+    internal record struct MulPair(short Left, short Right);
 }
