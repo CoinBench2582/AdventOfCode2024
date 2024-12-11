@@ -6,7 +6,7 @@ namespace Day2;
 internal class Program
 {
 #if DEBUG
-    const string localPath = @"Source.txt";
+    const string localPath = @"TestData.txt";
     static readonly string debugPath = Path.GetFullPath(localPath);
 #endif
 
@@ -32,7 +32,6 @@ internal class Program
         }
         WriteLine($"Bezpečných výkazů: {safe}");
         WriteLine($"Včetně omilostněných: {pity}");
-        _ = ReadLine();
     }
 }
 
@@ -62,7 +61,8 @@ public static class Methods
     #region Part 2
     internal static bool IsValidPity(this IEnumerable<int> report)
     {
-        int lastNum = report.First();
+        int lastValidNum = default;
+        int lastUsedNum = report.First();
         int countOfBad = 0;
         bool firstNotFound = true;
         ChangeStatus lastFine, curr;
@@ -70,37 +70,34 @@ public static class Methods
 
         foreach (int num in report.Skip(1))
         {
-            curr = (num - lastNum) switch
-            {
-                0 => ChangeStatus.None,
-                > 3 => ChangeStatus.OutOfRange,
-                < -3 => ChangeStatus.OutOfRange,
-                > 0 => ChangeStatus.Increasing,
-                < 0 => ChangeStatus.Decreasing,
-            };
+            curr = AssertDiff(num, lastUsedNum);
 
-            (lastFine, lastNum) = Assert(lastFine, curr, num);
+            (lastFine, lastUsedNum) = Assert( curr, num);
             if (countOfBad > 1)
                 return false;
         }
         return true;
 
-        (ChangeStatus, int) Assert(ChangeStatus lastFine, ChangeStatus current, int currNum)
+        (ChangeStatus, int) Assert(ChangeStatus current, int currNum)
         {
             if (curr is ChangeStatus.None or ChangeStatus.OutOfRange)
             {
                 countOfBad++;
-                return (lastFine, firstNotFound ? currNum : lastNum);
+                return (lastFine, firstNotFound ? currNum : lastUsedNum);
             }
 
+            ChangeStatus againstLastValid = AssertDiff(currNum, lastValidNum);
             if (firstNotFound)
+            {
                 firstNotFound = false;
-            else if (current != lastFine)
+            }
+            else if (againstLastValid != current && current != lastFine)
             {
                 countOfBad++;
-                return (lastFine, lastNum);
+                return (lastFine, lastUsedNum);
             }
 
+            lastValidNum = currNum;
             return (current, currNum);
         }
     }
@@ -132,7 +129,16 @@ public static class Methods
     #endregion
 
     #region Utils
-
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static ChangeStatus AssertDiff(int curr, int next)
+        => (curr - next) switch
+        {
+            0 => ChangeStatus.None,
+            > 3 => ChangeStatus.OutOfRange,
+            < -3 => ChangeStatus.OutOfRange,
+            > 0 => ChangeStatus.Increasing,
+            < 0 => ChangeStatus.Decreasing,
+        };
     #endregion
 }
 
