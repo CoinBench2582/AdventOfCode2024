@@ -44,7 +44,13 @@ public static class Methods
         {
             var output = ParseData(pathOfSource);
             countOfSafe = output.Count(x => IsValidReport(x) == -1);
-            withPity = output.Count(IsValidPity);
+            withPity = output.Count(r =>
+            {
+                int offender = IsValidReport(r);
+                return offender == -1
+                    || IsValidReport(r.Exclude(offender)) == -1
+                    || (offender != 0 && IsValidReport(r.Exclude(offender - 1)) == -1);
+            });
             return null;
         }
         catch (Exception ex)
@@ -117,7 +123,7 @@ public static class Methods
         int last = report.First();
         ChangeStatus status, curr;
         status = ChangeStatus.None;
-        int index = 0;
+        int index = 1;
         foreach (int num in report.Skip(1))
         {
             curr = AssertDiff(last, num);
@@ -143,6 +149,10 @@ public static class Methods
             > 0 => ChangeStatus.Increasing,
             < 0 => ChangeStatus.Decreasing,
         };
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<T> Exclude<T>(this IEnumerable<T> iter, int index)
+        => iter.Take(index).Concat(iter.Skip(index+1));
     #endregion
 }
 
