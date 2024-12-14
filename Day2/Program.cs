@@ -43,14 +43,8 @@ public static class Methods
         try
         {
             var output = ParseData(pathOfSource);
-            countOfSafe = output.Count(x => IsValidReport(x) == -1);
-            withPity = output.Count(r =>
-            {
-                int offender = IsValidReport(r);
-                return offender == -1
-                    || IsValidReport(r.Exclude(offender)) == -1
-                    || (offender != 0 && IsValidReport(r.Exclude(offender - 1)) == -1);
-            });
+            countOfSafe = output.Count(x => x.IsValidReport() == -1);
+            withPity = output.Count(IsValidDampened);
             return null;
         }
         catch (Exception ex)
@@ -107,6 +101,19 @@ public static class Methods
             lastValidNum = currNum;
             return (current, currNum);
         }
+    }
+    
+    internal static bool IsValidDampened(this IEnumerable<int> report)
+    {
+        if (report.IsValidReport() == -1)
+            return true;
+
+        int count = report.Count();
+        for (int i = 0; i < count; i++)
+            if (report.Exclude(i).IsValidReport() == -1)
+                return true;
+
+        return false;
     }
     #endregion
 
