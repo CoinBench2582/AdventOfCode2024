@@ -25,22 +25,31 @@ namespace Day3
                 return;
             }
 #endif
-            Exception? ex = TryGetResult(path);
+            Exception? ex = TryGetResult(path, out long sum);
             if (ex is not null)
             {
                 WriteLine($"Stala se chyba: {ex.Message}");
                 return;
             }
-            WriteLine($"");
+            WriteLine($"Součet všech vynásobených hodnot: {sum}");
             _ = ReadLine();
         }
     }
 
     public static class Methods
     {
-        public static Exception? TryGetResult(string path)
+        public static Exception? TryGetResult(string path, out long sum)
         {
-            return new NotImplementedException();
+            try
+            {
+                sum = GetInput(path).ParseAgressive().SumPairs();
+                return null;
+            }
+            catch (Exception e)
+            {
+                sum = default;
+                return e;
+            }
         }
 
         private static StreamReader GetInput(string path) => File.OpenText(path);
