@@ -48,8 +48,8 @@ namespace Day3
         #region Part 1
         internal static IEnumerable<MulPair> ParseAgressive(this StreamReader stream)
         {
-            if (stream is null || !stream.BaseStream.CanRead || stream.EndOfStream || stream.)
-                throw new ArgumentException();
+            if (stream is null || !stream.BaseStream.CanRead || stream.EndOfStream)
+                throw new ArgumentException(null, nameof(stream));
 
             // Token: mul(xxx,yyy)
             const int maxTokenLen = 3 + 1 + 3 + 1 + 3 + 1;
@@ -82,16 +82,83 @@ namespace Day3
                 {
                     stream?.Close();
                     Array.Clear(buffer);
-                    buffer = null;
                 }
             }
         }
 
+        private static readonly char[] firstChars = ['m', 'u', 'l', '('];
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         internal static Exception? ParsePair(this char[] chars, out MulPair pair)
         {
-            pair = default;
-            return new NotImplementedException();
+            // mul(x,y)
+            const int minLen = 3 + 1 + 1 + 1 + 1 + 1;
+            // mul(xxx,yyy)
+            const int maxLen = 3 + 1 + 3 + 1 + 3 + 1;
+            try
+            {
+                if (chars.Length is < minLen or > maxLen)
+                    throw new ArgumentOutOfRangeException(nameof(chars));
+
+                Span<char> span = chars.AsSpan();
+                int len = span.Length;
+                char current;
+                int i = 0;
+                // check if beginning is "mul("
+                for (; i < 4 && i < len; i++)
+                {
+                    if (span[i] != firstChars[i])
+                        throw new ArgumentException("Beginning mismatched with \"mul(\"!");
+                }
+
+                // get first number
+                int until = 7;
+                char[] buffer = new char[3];
+                int j;
+                for (j = 0; i < until && i < len; i++, j++)
+                {
+                    current = span[i];
+                    if (current is ',')
+                    {
+                        if (i == 4)
+                            throw new ArgumentNullException(nameof(chars), "First number is missing!");
+                        i++;
+                        break;
+                    }
+                    if (current is not (>= '0' and <= '9'))
+                        throw new ArgumentException("First number is invalid!");
+                    buffer[j] = current;
+                }
+                short first = short.Parse(buffer.AsSpan()[..j]);
+                // get second number
+                until = int.Min(i + 2, len);
+                for (j = 0; i < until; i++, j++)
+                {
+                    current = span[i];
+                    if (current is ')')
+                    {
+                        if (i == 4)
+                            throw new ArgumentNullException(nameof(chars), "Second number is missing!");
+                        i++;
+                        break;
+                    }
+                    if (current is not (>= '0' and <= '9'))
+                        throw new ArgumentException("Second number is invalid!");
+                    buffer[j] = current;
+                }
+                short second = short.Parse(buffer.AsSpan()[..j]);
+
+                // check if ends with ')'
+                if (chars[^1] != ')')
+                    throw new ArgumentException("Doesn't end with \')\'!");
+                pair = new(first, second);
+                return null;
+            }
+            catch (Exception e)
+            {
+                pair = default;
+                return e;
+            }
         }
         #endregion
 
