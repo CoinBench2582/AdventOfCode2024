@@ -6,7 +6,7 @@ namespace Day3
     internal class Program
     {
 #if DEBUG
-        const string test = @"Test.text";
+        const string test = @"Test.txt";
         const string target = @"Source.txt";
         readonly static string localPath = Path.GetFullPath(test);
 #endif
@@ -42,7 +42,8 @@ namespace Day3
         {
             try
             {
-                sum = GetInput(path).ParseAgressive().SumPairs();
+                IEnumerable<MulPair> parse = GetInput(path).ParseAgressive();
+                sum = parse.SumPairs();
                 return null;
             }
             catch (Exception e)
@@ -63,35 +64,33 @@ namespace Day3
             // Token: mul(xxx,yyy)
             const int maxTokenLen = 3 + 1 + 3 + 1 + 3 + 1;
 
-            return Impl();
-
-            IEnumerable<MulPair> Impl()
+            char[] buffer = new char[maxTokenLen];
+            try
             {
-                char[] buffer = new char[maxTokenLen];
-                try
+                char last; int count;
+                MulPair pair; Exception? ex;
+                while (!stream!.EndOfStream)
                 {
-                    char last; int count;
-                    MulPair pair; Exception? ex;
-                    while (!stream!.EndOfStream)
+                    for (last = (char)stream.Read(); !(last == 'm' || stream.EndOfStream); last = (char)stream.Read());
+                    if (stream.EndOfStream) yield break;
+                    else buffer[0] = last;
+
+                    for (count = 1; !(last == ')' || count >= maxTokenLen || stream.EndOfStream); count++)
                     {
-                        for (last = (char)stream.Peek(); last != 'm' || stream.EndOfStream; last = (char)stream.Read());
-                        if (last != 'm') break;
-                        else buffer[0] = last;
-
-                        for (count = 1; last != ')' || count < maxTokenLen || !stream.EndOfStream; count++)
-                            buffer[count] = last = (char)stream.Read();
-
-                        ex = buffer.ParsePair(out pair);
-                        if (ex is null)
-                            yield return pair;
-                        Array.Clear(buffer, 0, maxTokenLen);
+                        if (stream.Peek() == 'm') break;
+                        buffer[count] = last = (char)stream.Read();
                     }
+
+                    ex = buffer[..count].ParsePair(out pair);
+                    if (ex is null)
+                        yield return pair;
                 }
-                finally
-                {
-                    stream?.Close();
-                    Array.Clear(buffer);
-                }
+                yield break;
+            }
+            finally
+            {
+                stream?.Close();
+                Array.Clear(buffer);
             }
         }
 
@@ -108,15 +107,15 @@ namespace Day3
             {
                 if (chars.Length is < minLen or > maxLen)
                     throw new ArgumentOutOfRangeException(nameof(chars));
-
+                
                 Span<char> span = chars.AsSpan();
                 int len = span.Length;
                 char current;
-                int i = 0;
+                int currIndex = 0;
                 // check if beginning is "mul("
-                for (; i < 4 && i < len; i++)
+                for (; currIndex < 4 && currIndex < len; currIndex++)
                 {
-                    if (span[i] != firstChars[i])
+                    if (span[currIndex] != firstChars[currIndex])
                         throw new ArgumentException("Beginning mismatched with \"mul(\"!");
                 }
 
@@ -124,14 +123,14 @@ namespace Day3
                 int until = 7;
                 char[] buffer = new char[3];
                 int j;
-                for (j = 0; i < until && i < len; i++, j++)
+                for (j = 0; currIndex < until && currIndex < len; currIndex++, j++)
                 {
-                    current = span[i];
+                    current = span[currIndex];
                     if (current is ',')
                     {
-                        if (i == 4)
+                        if (currIndex == 4)
                             throw new ArgumentNullException(nameof(chars), "First number is missing!");
-                        i++;
+                        currIndex++;
                         break;
                     }
                     if (current is not (>= '0' and <= '9'))
@@ -140,15 +139,15 @@ namespace Day3
                 }
                 short first = short.Parse(buffer.AsSpan()[..j]);
                 // get second number
-                until = int.Min(i + 2, len);
-                for (j = 0; i < until; i++, j++)
+                int beginning = currIndex;
+                until = int.Min(currIndex + 2, len);
+                for (j = 0; currIndex < until; currIndex++, j++)
                 {
-                    current = span[i];
+                    current = span[currIndex];
                     if (current is ')')
                     {
-                        if (i == 4)
+                        if (currIndex == beginning)
                             throw new ArgumentNullException(nameof(chars), "Second number is missing!");
-                        i++;
                         break;
                     }
                     if (current is not (>= '0' and <= '9'))
@@ -172,8 +171,17 @@ namespace Day3
         #endregion
 
         #region Utils
+        public static IEnumerator<char> GetEnumerator(this StreamReader reader)
+        {
+            while (!reader.EndOfStream)
+                yield return (char)reader.Read();
+        }
+
+        internal static IEnumerable<int> MulEach(this IEnumerable<MulPair> pairs)
+            => pairs.Select(pair => pair.Mul());
+
         internal static long SumPairs(this IEnumerable<MulPair> pairs)
-            => pairs.Select(pair => (long)pair.Mul()).Sum();
+            => pairs.Aggregate(0L, (prev, pair) => prev + pair.Mul());
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         internal static int Mul(this MulPair pair) => pair.Left * pair.Right;
