@@ -1,7 +1,7 @@
 ﻿using static System.Console;
-using static Day2.Methods;
+using static AdventOfCode.Day2.Methods;
 
-namespace Day2;
+namespace AdventOfCode.Day2;
 
 internal class Program
 {
