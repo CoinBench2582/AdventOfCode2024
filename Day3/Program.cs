@@ -1,4 +1,6 @@
-﻿using static System.Console;
+﻿using System.Diagnostics;
+
+using static System.Console;
 using static Day3.Methods;
 
 namespace Day3
@@ -6,9 +8,11 @@ namespace Day3
     internal class Program
     {
 #if DEBUG
+#pragma warning disable IDE0051 // Odebrat nepoužité soukromé členy
         const string test = @"Test.txt";
         const string target = @"Source.txt";
-        readonly static string localPath = Path.GetFullPath(test);
+#pragma warning restore IDE0051 // Odebrat nepoužité soukromé členy
+        readonly static string localPath = Path.GetFullPath(target);
 #endif
 
         static void Main()
@@ -68,7 +72,9 @@ namespace Day3
             try
             {
                 char last; int count;
+#pragma warning disable IDE0018 // Vložená deklarace proměnné
                 MulPair pair; Exception? ex;
+#pragma warning restore IDE0018 // Vložená deklarace proměnné
                 while (!stream!.EndOfStream)
                 {
                     for (last = (char)stream.Read(); !(last == 'm' || stream.EndOfStream); last = (char)stream.Read());
@@ -84,6 +90,9 @@ namespace Day3
                     ex = buffer[..count].ParsePair(out pair);
                     if (ex is null)
                         yield return pair;
+#if DEBUG
+                    else WriteLine($"{new string(buffer[..count])}: {ex}");
+#endif
                 }
                 yield break;
             }
@@ -130,7 +139,6 @@ namespace Day3
                     {
                         if (currIndex == 4)
                             throw new ArgumentNullException(nameof(chars), "First number is missing!");
-                        currIndex++;
                         break;
                     }
                     if (current is not (>= '0' and <= '9'))
@@ -139,8 +147,8 @@ namespace Day3
                 }
                 short first = short.Parse(buffer.AsSpan()[..j]);
                 // get second number
-                int beginning = currIndex;
-                until = int.Min(currIndex + 2, len);
+                int beginning = ++currIndex;
+                until = int.Min(currIndex + 3, len);
                 for (j = 0; currIndex < until; currIndex++, j++)
                 {
                     current = span[currIndex];
