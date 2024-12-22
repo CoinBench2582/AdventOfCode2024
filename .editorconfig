@@ -1,0 +1,7 @@
+﻿[*.{cs,vb}]
+
+# IDE0130: Namespace neodpovídá struktuře složek.
+dotnet_diagnostic.IDE0130.severity = silent
+
+# IDE0160: Převést na namespace pro celý blok
+csharp_style_namespace_declarations = file_scoped

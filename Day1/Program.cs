@@ -5,11 +5,18 @@ namespace AdventOfCode.Day1;
 
 internal class Program
 {
+#if DEBUG
+#pragma warning disable IDE0051 // Odebrat nepoužité soukromé členy
+    const string target = @"Source.txt";
+    const string test = @"Test.txt";
+#pragma warning restore IDE0051 // Odebrat nepoužité soukromé členy
+    static readonly string localPath = Path.GetFullPath(target);
+#endif
+
     static void Main()
     {
         string path;
 #if DEBUG
-        const string localPath = @"D:\VOJTA\Moje\C_Sharp\AdventOfCode2024\Day1\Source.txt";
         path = localPath;
 #else
         WriteLine($"Vložte úplnou cestu k cílovému souboru");

@@ -10,7 +10,7 @@ internal class Program
     const string test = @"Test.txt";
     const string target = @"Source.txt";
 #pragma warning restore IDE0051 // Odebrat nepoužité soukromé členy
-    readonly static string localPath = Path.GetFullPath(target);
+    static readonly string localPath = Path.GetFullPath(target);
 #endif
 
     static void Main()

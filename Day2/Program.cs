@@ -6,16 +6,18 @@ namespace AdventOfCode.Day2;
 internal class Program
 {
 #if DEBUG
-    const string testPath = @"TestData.txt";
-    const string localPath = @"Source.txt";
-    static readonly string debugPath = Path.GetFullPath(localPath);
+#pragma warning disable IDE0051 // Odebrat nepoužité soukromé členy
+    const string test = @"Test.txt";
+    const string target = @"Source.txt";
+#pragma warning restore IDE0051 // Odebrat nepoužité soukromé členy
+    static readonly string localPath = Path.GetFullPath(target);
 #endif
 
     static void Main()
     {
         string path;
 #if DEBUG
-        path = debugPath;
+        path = localPath;
 #else
         WriteLine($"Vložte úplnou cestu k cílovému souboru");
         path = ReadLine() ?? string.Empty;
