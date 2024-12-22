@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 using static System.Console;
 using static Day3.Methods;
@@ -12,7 +13,7 @@ namespace Day3
         const string test = @"Test.txt";
         const string target = @"Source.txt";
 #pragma warning restore IDE0051 // Odebrat nepoužité soukromé členy
-        readonly static string localPath = Path.GetFullPath(target);
+        readonly static string localPath = Path.GetFullPath(test);
 #endif
 
         static void Main()
@@ -29,35 +30,134 @@ namespace Day3
                 return;
             }
 #endif
-            Exception? ex = TryGetResult(path, out long sum);
+            Exception? ex = TryGetResult(path, out long simple, out long toggled);
             if (ex is not null)
             {
                 WriteLine($"Stala se chyba: {ex.Message}");
                 return;
             }
-            WriteLine($"Součet všech vynásobených hodnot: {sum}");
+            WriteLine($"Součet všech vynásobených hodnot: {simple}");
+            WriteLine($"Součet vynásobených hodnot s přepínáním: {toggled}");
             _ = ReadLine();
         }
     }
 
     public static class Methods
     {
-        public static Exception? TryGetResult(string path, out long sum)
+        public static Exception? TryGetResult(string path, out long simple, out long toggled)
         {
             try
             {
-                IEnumerable<MulPair> parse = GetInput(path).ParseAgressive();
-                sum = parse.SumPairs();
+                simple = GetInput(path).ParseAgressive().SumPairs();
+                toggled = GetInput(path).ParseToggled().SumPairs();
                 return null;
             }
             catch (Exception e)
             {
-                sum = default;
+                simple = default;
+                toggled = default;
                 return e;
             }
         }
 
         private static StreamReader GetInput(string path) => File.OpenText(path);
+
+        #region Part 2
+        internal static IEnumerable<MulPair> ParseToggled(this StreamReader stream)
+        {
+            if (stream is null || !stream.BaseStream.CanRead || stream.EndOfStream)
+                throw new ArgumentException(null, nameof(stream));
+
+            // Token: mul(xxx,yyy)
+            const int maxMulLen = 3 + 1 + 3 + 1 + 3 + 1;
+            // Token: don't()
+            const int maxToggleLen = 2 + 3 + 2;
+
+            char[] buffer = new char[maxMulLen];
+
+            bool enabled = true;
+            char last; int count; bool between;
+#pragma warning disable IDE0018 // Vložená deklarace proměnné
+            MulPair pair; Exception? ex;
+#pragma warning restore IDE0018 // Vložená deklarace proměnné
+            try
+            {
+                while (!stream!.EndOfStream)
+                {
+                    for (last = (char)stream.Read(); !(last is 'm' or 'd' || stream.EndOfStream); last = (char)stream.Read());
+                    if (stream.EndOfStream) yield break;
+                    else buffer[0] = last;
+
+                    switch (last)
+                    {
+                        case 'd':
+                            for (count = 1; !(last == ')' || count >= maxToggleLen || stream.EndOfStream); count++)
+                            {
+                                if (stream.Peek() is 'm' or 'd') break;
+                                buffer[count] = last = (char)stream.Read();
+                            }
+
+                            ex = buffer[..count].ParseToggle(out between);
+                            if (ex is null)
+                                enabled = between;
+#if DEBUG
+                            else
+                                WriteLine($"TOGGLE - {new string(buffer[..count])}: {ex}");
+#endif
+                            break;
+
+                        case 'm':
+                            for (count = 1; !(last == ')' || count >= maxMulLen || stream.EndOfStream); count++)
+                            {
+                                if (stream.Peek() is 'm' or 'd')
+                                    break;
+                                buffer[count] = last = (char)stream.Read();
+                            }
+
+                            if (enabled)
+                            {
+                                ex = buffer[..count].ParsePair(out pair);
+                                if (ex is null)
+                                    yield return pair;
+#if DEBUG
+                                else
+                                    WriteLine($"MUL_INS - {new string(buffer[..count])}: {ex}");
+#endif
+                            }
+                            break;
+
+                        default:
+                            throw new Exception("unexpected result");
+                    }
+                }
+                yield break;
+            }
+            finally
+            {
+                stream?.Close();
+                Array.Clear(buffer);
+            }
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        private static Exception? ParseToggle(this char[] chars, out bool result)
+        {
+            // do()
+            const int minLen = 2 + 2;
+            // don't()
+            const int maxLen = 2 + 3 + 2;
+            try
+            {
+                result = default;
+                return new NotImplementedException();
+            }
+            catch (Exception e)
+            {
+                result = default;
+                return e;
+            }
+        }
+        #endregion
 
         #region Part 1
         internal static IEnumerable<MulPair> ParseAgressive(this StreamReader stream)
