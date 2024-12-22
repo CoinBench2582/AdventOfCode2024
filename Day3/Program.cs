@@ -13,7 +13,7 @@ namespace Day3
         const string test = @"Test.txt";
         const string target = @"Source.txt";
 #pragma warning restore IDE0051 // Odebrat nepoužité soukromé členy
-        readonly static string localPath = Path.GetFullPath(test);
+        readonly static string localPath = Path.GetFullPath(target);
 #endif
 
         static void Main()
@@ -48,7 +48,13 @@ namespace Day3
         {
             try
             {
+#if DEBUG
+                WriteLine("\r\nSimple Parse:");
+#endif
                 simple = GetInput(path).ParseAgressive().SumPairs();
+#if DEBUG
+                WriteLine("\r\n\r\n\r\n\r\nToggled Parse:");
+#endif
                 toggled = GetInput(path).ParseToggled().SumPairs();
                 return null;
             }
@@ -230,7 +236,7 @@ namespace Day3
                     if (ex is null)
                         yield return pair;
 #if DEBUG
-                    // else WriteLine($"{new string(buffer[..count])}: {ex}");
+                    else WriteLine($"{new string(buffer[..count])}: {ex}");
 #endif
                 }
                 yield break;
