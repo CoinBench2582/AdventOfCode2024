@@ -82,7 +82,7 @@ namespace Day3
 #pragma warning restore IDE0018 // Vložená deklarace proměnné
             try
             {
-                while (!stream!.EndOfStream)
+                while (!stream.EndOfStream)
                 {
                     for (last = (char)stream.Read(); !(last is 'm' or 'd' || stream.EndOfStream); last = (char)stream.Read());
                     if (stream.EndOfStream) yield break;
@@ -101,16 +101,14 @@ namespace Day3
                             if (ex is null)
                                 enabled = between;
 #if DEBUG
-                            else
-                                WriteLine($"TOGGLE - {new string(buffer[..count])}: {ex}");
+                            else WriteLine($"TOGGLE - {new string(buffer[..count])}: {ex}");
 #endif
                             break;
 
                         case 'm':
                             for (count = 1; !(last == ')' || count >= maxMulLen || stream.EndOfStream); count++)
                             {
-                                if (stream.Peek() is 'm' or 'd')
-                                    break;
+                                if (stream.Peek() is 'm' or 'd') break;
                                 buffer[count] = last = (char)stream.Read();
                             }
 
@@ -120,8 +118,7 @@ namespace Day3
                                 if (ex is null)
                                     yield return pair;
 #if DEBUG
-                                else
-                                    WriteLine($"MUL_INS - {new string(buffer[..count])}: {ex}");
+                                else WriteLine($"MUL_INS - {new string(buffer[..count])}: {ex}");
 #endif
                             }
                             break;
@@ -217,7 +214,7 @@ namespace Day3
 #pragma warning disable IDE0018 // Vložená deklarace proměnné
                 MulPair pair; Exception? ex;
 #pragma warning restore IDE0018 // Vložená deklarace proměnné
-                while (!stream!.EndOfStream)
+                while (!stream.EndOfStream)
                 {
                     for (last = (char)stream.Read(); !(last == 'm' || stream.EndOfStream); last = (char)stream.Read());
                     if (stream.EndOfStream) yield break;
@@ -233,7 +230,7 @@ namespace Day3
                     if (ex is null)
                         yield return pair;
 #if DEBUG
-                    else WriteLine($"{new string(buffer[..count])}: {ex}");
+                    // else WriteLine($"{new string(buffer[..count])}: {ex}");
 #endif
                 }
                 yield break;
