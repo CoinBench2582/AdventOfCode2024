@@ -139,6 +139,8 @@ namespace Day3
             }
         }
 
+        private static readonly char[] firstToggleChars = ['d', 'o'];
+        private static readonly char[] middleDisableChars = ['n', '\'', 't'];
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         private static Exception? ParseToggle(this char[] chars, out bool result)
         {
@@ -148,8 +150,48 @@ namespace Day3
             const int maxLen = 2 + 3 + 2;
             try
             {
-                result = default;
-                return new NotImplementedException();
+                if (chars.Length is not (minLen or maxLen))
+                    throw new ArgumentOutOfRangeException(nameof(chars));
+
+                Span<char> span = chars.AsSpan();
+                int len = span.Length;
+                char current;
+                int currIndex = 0;
+                // check if beginning is "do"
+                for (; currIndex < 2; currIndex++)
+                    if (span[currIndex] != firstToggleChars[currIndex])
+                        throw new ArgumentException("Beginning mismatched with \"do\"!");
+                // assert which are we working with
+                current = span[currIndex];
+                switch (current)
+                {
+                    // Enable
+                    case '(':
+                        if (span[++currIndex] == ')')
+                        {
+                            result = true;
+                            return null;
+                        }
+                        else
+                            throw new ArgumentException("Doesn't end with \')\'!");
+                    // Disable
+                    case 'n':
+                        for (; currIndex < 5; currIndex++)
+                            if (span[currIndex] != middleDisableChars[currIndex -2])
+                                throw new ArgumentException("Middle mismatched with \"n't\"!");
+                        if (span[currIndex] != '(')
+                            throw new ArgumentException("No \'(\' after \"don't\"!");
+                        else if (span[++currIndex] != ')')
+                            throw new ArgumentException("Doesn't end with \')\'!");
+                        else
+                        {
+                            result = false;
+                            return null;
+                        }
+
+                    default:
+                        throw new ArgumentException("Unexpected character!");
+                }
             }
             catch (Exception e)
             {
@@ -203,7 +245,7 @@ namespace Day3
             }
         }
 
-        private static readonly char[] firstChars = ['m', 'u', 'l', '('];
+        private static readonly char[] firstMulChars = ['m', 'u', 'l', '('];
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         internal static Exception? ParsePair(this char[] chars, out MulPair pair)
@@ -222,9 +264,9 @@ namespace Day3
                 char current;
                 int currIndex = 0;
                 // check if beginning is "mul("
-                for (; currIndex < 4 && currIndex < len; currIndex++)
+                for (; currIndex < 4; currIndex++)
                 {
-                    if (span[currIndex] != firstChars[currIndex])
+                    if (span[currIndex] != firstMulChars[currIndex])
                         throw new ArgumentException("Beginning mismatched with \"mul(\"!");
                 }
 
