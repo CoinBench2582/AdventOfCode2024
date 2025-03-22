@@ -7,17 +7,17 @@ internal class Program
 {
 #if DEBUG
 #pragma warning disable IDE0051 // Odebrat nepoužité soukromé členy
-    const string test = @"Test.txt";
-    const string target = @"Source.txt";
+    const string _test = @"Test.txt";
+    const string _target = @"Source.txt";
 #pragma warning restore IDE0051 // Odebrat nepoužité soukromé členy
-    static readonly string localPath = Path.GetFullPath(target);
+    static readonly string _localPath = Path.GetFullPath(_target);
 #endif
 
     static void Main()
     {
         string path;
 #if DEBUG
-        path = localPath;
+        path = _localPath;
 #else
         WriteLine($"Vložte úplnou cestu k cílovému souboru");
         path = ReadLine() ?? string.Empty;

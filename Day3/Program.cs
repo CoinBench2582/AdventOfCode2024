@@ -7,17 +7,17 @@ internal class Program
 {
 #if DEBUG
 #pragma warning disable IDE0051 // Odebrat nepoužité soukromé členy
-    const string test = @"Test.txt";
-    const string target = @"Source.txt";
+    const string _test = @"Test.txt";
+    const string _target = @"Source.txt";
 #pragma warning restore IDE0051 // Odebrat nepoužité soukromé členy
-    static readonly string localPath = Path.GetFullPath(target);
+    static readonly string _localPath = Path.GetFullPath(_target);
 #endif
 
     static void Main()
     {
         string path;
 #if DEBUG
-        path = localPath;
+        path = _localPath;
 #else
         WriteLine($"Vložte úplnou cestu k cílovému souboru");
         path = ReadLine() ?? string.Empty;
@@ -139,8 +139,8 @@ public static class Methods
         }
     }
 
-    private static readonly char[] firstToggleChars = ['d', 'o'];
-    private static readonly char[] middleDisableChars = ['n', '\'', 't'];
+    private static readonly char[] _firstToggleChars = ['d', 'o'];
+    private static readonly char[] _middleDisableChars = ['n', '\'', 't'];
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static Exception? ParseToggle(this char[] chars, out bool result)
     {
@@ -159,7 +159,7 @@ public static class Methods
             int currIndex = 0;
             // check if beginning is "do"
             for (; currIndex < 2; currIndex++)
-                if (span[currIndex] != firstToggleChars[currIndex])
+                if (span[currIndex] != _firstToggleChars[currIndex])
                     throw new ArgumentException("Beginning mismatched with \"do\"!");
             // assert which are we working with
             current = span[currIndex];
@@ -177,7 +177,7 @@ public static class Methods
                 // Disable
                 case 'n':
                     for (; currIndex < 5; currIndex++)
-                        if (span[currIndex] != middleDisableChars[currIndex -2])
+                        if (span[currIndex] != _middleDisableChars[currIndex -2])
                             throw new ArgumentException("Middle mismatched with \"n't\"!");
                     if (span[currIndex] != '(')
                         throw new ArgumentException("No \'(\' after \"don't\"!");
@@ -245,7 +245,7 @@ public static class Methods
         }
     }
 
-    private static readonly char[] firstMulChars = ['m', 'u', 'l', '('];
+    private static readonly char[] _firstMulChars = ['m', 'u', 'l', '('];
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal static Exception? ParsePair(this char[] chars, out MulPair pair)
@@ -266,7 +266,7 @@ public static class Methods
             // check if beginning is "mul("
             for (; currIndex < 4; currIndex++)
             {
-                if (span[currIndex] != firstMulChars[currIndex])
+                if (span[currIndex] != _firstMulChars[currIndex])
                     throw new ArgumentException("Beginning mismatched with \"mul(\"!");
             }
 
