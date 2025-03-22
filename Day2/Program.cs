@@ -75,7 +75,7 @@ public static class Methods
         {
             curr = AssertDiff(num, lastUsedNum);
 
-            (lastFine, lastUsedNum) = Assert( curr, num);
+            (lastFine, lastUsedNum) = Assert(curr, num);
             if (countOfBad > 1)
                 return false;
         }
@@ -161,7 +161,7 @@ public static class Methods
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static IEnumerable<T> Exclude<T>(this IEnumerable<T> iter, int index)
-        => iter.Take(index).Concat(iter.Skip(index+1));
+        => iter.Take(index).Concat(iter.Skip(++index));
     #endregion
 }
 
